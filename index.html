@@ -29,15 +29,21 @@ h3{font-size:15px;margin:16px 0 8px}
 .mut{color:var(--mut)}.small{font-size:12.5px}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .chip{border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:999px;padding:7px 13px;font-size:13px;cursor:pointer}
-.chip.on{background:var(--acc);color:#000;border-color:var(--acc);font-weight:600}
+.chip.on{background:var(--c,var(--acc));color:#000;border-color:var(--c,var(--acc));font-weight:600}
+.chip[style]:not(.on){border-color:var(--t);color:var(--c)}
 .btn{background:var(--acc);color:#000;border:0;border-radius:12px;padding:12px 16px;font-weight:700;font-size:15px;cursor:pointer;width:100%}
 .btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line)}
 .row{display:flex;gap:10px;align-items:center}
 .row>*{flex:1}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:1px}
 .lv{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--mut);white-space:nowrap}
-.move{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);cursor:pointer}
-.move:last-child{border-bottom:0}
+.move{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 10px;margin:6px 0;border-left:4px solid var(--c,var(--line));border-radius:8px;background:var(--t,transparent);cursor:pointer}
+.move b{color:var(--c,var(--txt))}
+.seq span.pill{border-left:3px solid var(--c);background:var(--t)}
+.seq span.pill.link{color:var(--txt);text-decoration:none}
+#sheet.colored{border-top:4px solid var(--c)}
+#sheet.colored h3{color:var(--c)}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:11.5px;margin-bottom:6px}
 .move b{font-weight:600}
 .move .en{color:var(--mut);font-size:12.5px}
 .done{color:var(--acc)}
@@ -48,9 +54,9 @@ li{margin:3px 0}
 .seg button.on{background:var(--acc);color:#000;font-weight:700}
 .bar{height:8px;background:var(--card2);border-radius:99px;overflow:hidden}
 .bar>div{height:100%;background:var(--acc)}
-.blk{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line)}
-.blk:last-child{border-bottom:0}
-.blk .d{color:var(--acc);font-size:13px;text-align:right;max-width:48%}
+.blk{display:flex;justify-content:space-between;gap:10px;padding:9px 10px;margin:6px 0;border-left:4px solid var(--c,var(--line));border-radius:8px;background:var(--t,transparent)}
+.blk .link{color:var(--c,var(--txt));text-decoration-color:var(--c,#555)}
+.blk .d{color:var(--c,var(--acc));font-size:13px;text-align:right;max-width:48%}
 .link{color:var(--txt);text-decoration:underline;text-decoration-color:#555;cursor:pointer}
 .weeks{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:12px}
 .weeks button{background:var(--card);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:9px 0;font-size:13px;cursor:pointer;position:relative}
@@ -102,6 +108,8 @@ const $=s=>document.querySelector(s);
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const lvTag=l=>`<span class="lv">${D.levels[l]}</span>`;
 const mvLink=id=>`<span class="link" data-mv="${id}">${esc(MOVES[id].name)}</span>`;
+const cv=id=>{const c=CATS[id].color;return `style="--c:${c};--t:${c}22"`};
+const legend=()=>`<div class="legend">${D.cats.map(c=>`<span><span class="dot" style="background:${c.color}"></span>${esc(c.name)}</span>`).join("")}</div>`;
 const sub=(c)=>c.en&&c.en!==c.name?` <span class="mut">· ${esc(c.en)}</span>`:"";
 
 function nav(){$("#sub").textContent=T.sub;$("#langs").innerHTML=["en","pt","fr"].map(l=>`<button class="${S.lang===l?"on":""}" data-lang="${l}">${l.toUpperCase()}</button>`).join("");
@@ -141,14 +149,14 @@ function buildSession(){
 }
 function today(){
   let h=`<h2>${T.build}</h2><div class="card"><div class="small mut" style="margin-bottom:8px">${T.hint}</div>
-  <div class="chips">${D.cats.map(c=>`<button class="chip ${S.pick.includes(c.id)?"on":""}" data-pick="${c.id}">${esc(c.name)} · L${S.levels[c.id]}</button>`).join("")}</div>
+  <div class="chips">${D.cats.map(c=>`<button class="chip ${S.pick.includes(c.id)?"on":""}" ${cv(c.id)} data-pick="${c.id}">${esc(c.name)} · L${S.levels[c.id]}</button>`).join("")}</div>
   <div class="small mut" style="margin-bottom:6px">${T.len}</div>
   <div class="seg" style="margin-bottom:12px">${[30,45,60,75].map(n=>`<button class="${S.mins===n?"on":""}" data-mins="${n}">${n} min</button>`).join("")}</div>
   <button class="btn" id="build" ${S.pick.length?"":"disabled"}>${T.buildBtn}</button></div>`;
   if(S.built&&S.built.blocks.length){
     const b=S.built;
     h+=`<div class="card"><h3 style="margin-top:0">${T.warm}</h3><ul class="small">${D.warmup.map(w=>`<li>${esc(w)}</li>`).join("")}</ul></div>
-    <div class="card"><h3 style="margin-top:0">${T.skills}</h3>${b.blocks.map(x=>{const m=MOVES[x.move];return `<div class="blk"><div><span class="dot" style="background:${CATS[m.cat].color}"></span>${mvLink(m.id)}<div class="small mut">${esc(m.en)}</div></div><div class="d">${esc(doseFor(m))}</div></div>`}).join("")}
+    <div class="card"><h3 style="margin-top:0">${T.skills}</h3>${legend()}${b.blocks.map(x=>{const m=MOVES[x.move];return `<div class="blk" ${cv(m.cat)}><div>${mvLink(m.id)}<div class="small mut">${esc(m.en)}</div></div><div class="d">${esc(doseFor(m))}</div></div>`}).join("")}
     <div class="small mut" style="margin-top:8px">${T.tap}</div></div>
     <div class="card"><h3 style="margin-top:0">${T.combo}</h3>${comboHTML(COMBOS[b.combo])}<div class="small mut" style="margin-top:6px">${T.comboHint}</div></div>
     <div class="card"><h3 style="margin-top:0">${T.cool}</h3><ul class="small">${D.cooldown.map(w=>`<li>${esc(w)}</li>`).join("")}</ul></div>
@@ -156,7 +164,7 @@ function today(){
   }
   return h;
 }
-function comboHTML(c){return `<b>${esc(c.name)}</b> ${lvTag(c.lvl)}<div class="seq">${c.moves.map((n,i)=>(i?'<span class="arrow">→</span>':'')+`<span ${NAMEID[n]?`class="link" data-mv="${NAMEID[n]}"`:""}>${esc(n)}</span>`).join("")}</div>`}
+function comboHTML(c){return `<b>${esc(c.name)}</b> ${lvTag(c.lvl)}<div class="seq">${c.moves.map((n,i)=>(i?'<span class="arrow">→</span>':'')+`<span ${NAMEID[n]?`class="link pill" ${cv(MOVES[NAMEID[n]].cat)} data-mv="${NAMEID[n]}"`:""}>${esc(n)}</span>`).join("")}</div>`}
 
 function program(){
   const total=D.program.length*3,dn=Object.keys(S.done).filter(k=>S.done[k]).length;
@@ -167,8 +175,8 @@ function program(){
   w.sessions.forEach(s=>{
     const k=w.week+s.key;
     h+=`<div class="card"><h3 style="margin:0">${T.session} ${s.key} · ${esc(s.title)}</h3>
-    <div class="small mut" style="margin:6px 0 4px">${T.warmSee}</div>
-    ${s.blocks.map(b=>{const m=MOVES[b.move];return `<div class="blk"><div><span class="dot" style="background:${CATS[m.cat].color}"></span>${mvLink(m.id)} ${S.mastered[m.id]?'<span class="done">✓</span>':""}</div><div class="d">${esc(b.dose)}</div></div>`}).join("")}
+    <div class="small mut" style="margin:6px 0 4px">${T.warmSee}</div>${legend()}
+    ${s.blocks.map(b=>{const m=MOVES[b.move];return `<div class="blk" ${cv(m.cat)}><div>${mvLink(m.id)} ${S.mastered[m.id]?'<span class="done">✓</span>':""}</div><div class="d">${esc(b.dose)}</div></div>`}).join("")}
     <h3>${T.combos} · ${esc(s.comboDose)}</h3>${s.combos.map(c=>`<div style="margin-bottom:8px">${comboHTML(COMBOS[c])}</div>`).join("")}
     <h3>${T.cond}</h3><ul class="small">${s.conditioning.map(c=>`<li>${esc(c)}</li>`).join("")}</ul>
     <label class="chk"><input type="checkbox" data-done="${k}" ${S.done[k]?"checked":""}> ${T.sDone}</label></div>`;
@@ -179,9 +187,9 @@ function program(){
 function library(){
   const c=CATS[S.libCat];
   const ms=D.moves.filter(m=>m.cat===c.id).sort((a,b)=>a.lvl-b.lvl);
-  let h=`<h2>${T.lib}</h2><div class="chips">${D.cats.map(x=>`<button class="chip ${S.libCat===x.id?"on":""}" data-lib="${x.id}">${esc(x.name)}</button>`).join("")}</div>
+  let h=`<h2>${T.lib}</h2><div class="chips">${D.cats.map(x=>`<button class="chip ${S.libCat===x.id?"on":""}" ${cv(x.id)} data-lib="${x.id}">${esc(x.name)}</button>`).join("")}</div>
   <div class="card"><b><span class="dot" style="background:${c.color}"></span>${esc(c.name)}</b>${sub(c)}<div class="small mut" style="margin-top:6px">${esc(c.intro)}</div></div><div class="card">`;
-  ms.forEach(m=>{h+=`<div class="move" data-mv="${m.id}"><div><b>${esc(m.name)}</b> ${S.mastered[m.id]?'<span class="done">✓</span>':""}<div class="en">${esc(m.en)}</div></div>${lvTag(m.lvl)}</div>`});
+  ms.forEach(m=>{h+=`<div class="move" ${cv(m.cat)} data-mv="${m.id}"><div><b>${esc(m.name)}</b> ${S.mastered[m.id]?'<span class="done">✓</span>':""}<div class="en">${esc(m.en)}</div></div>${lvTag(m.lvl)}</div>`});
   h+=`</div><h3>${T.combos}</h3>${D.combos.map(cb=>`<div class="card">${comboHTML(cb)}</div>`).join("")}`;
   return h;
 }
@@ -197,7 +205,7 @@ function openMove(id){
   const counters=D.moves.filter(x=>x.defends&&x.defends.includes(m.id));
   if(counters.length)h+=`<h3>${T.defend}</h3><div class="seq">${counters.map(d=>`<span class="link" data-mv="${d.id}">${esc(d.name)}</span>`).join("")}</div>`;
   h+=`<label class="chk" style="margin-top:12px"><input type="checkbox" data-mast="${m.id}" ${S.mastered[m.id]?"checked":""}> ${T.own}</label>`;
-  $("#sheet").innerHTML=h;$("#modal").classList.add("open");$("#sheet").scrollTop=0;
+  $("#sheet").innerHTML=h;$("#sheet").className="colored";$("#sheet").style.setProperty("--c",c.color);$("#modal").classList.add("open");$("#sheet").scrollTop=0;
 }
 
 function progress(){
